@@ -2,9 +2,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.LinkedList;
 
 public class Main extends JFrame {
     private GridPanel gridPanel;
+    private LinkedList<Point> last100Positions = new LinkedList<>();
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -25,18 +27,33 @@ public class Main extends JFrame {
         public DrawingCanvas() {
             setPreferredSize(new Dimension(720, 720));
             addMouseMotionListener(new MouseAdapter() {
-             
                 public void mouseMoved(MouseEvent e) {
-                    Point p = e.getPoint();
-                    gridPanel.updateHighlight(p.x, p.y);
-                    repaint(); 
+                    gridPanel.updateHighlight(e.getX(), e.getY());
+                    updateLast100Positions(e.getPoint());
+                    repaint();
                 }
             });
         }
 
+        private void updateLast100Positions(Point p) {
+            if (last100Positions.size() >= 100) {
+                last100Positions.removeFirst();
+            }
+            last100Positions.addLast(p);
+        }
+
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
+            drawLast100Positions(g);
             gridPanel.drawGrid(g);
+        }
+
+        private void drawLast100Positions(Graphics g) {
+            g.setColor(new Color(128, 128, 128, 128));
+
+            for (Point p : last100Positions) {
+                g.fillOval(p.x - 5, p.y - 5, 10, 10);
+            }
         }
     }
 
@@ -70,8 +87,7 @@ public class Main extends JFrame {
         public void updateHighlight(int mouseX, int mouseY) {
             int row = (mouseY - marginY) / cellDimension;
             int col = (mouseX - marginX) / cellDimension;
-            
-         
+
             if (row >= 0 && row < numRows && col >= 0 && col < numCols) {
                 highlightedRow = row;
                 highlightedCol = col;
@@ -96,7 +112,7 @@ public class Main extends JFrame {
             int y = marginY + rowIndex * size;
             if (isHighlighted) {
                 g.setColor(Color.GRAY);
-                g.fillRect(x, y, size, size); 
+                g.fillRect(x, y, size, size);
             } else {
                 g.setColor(Color.BLACK);
             }
