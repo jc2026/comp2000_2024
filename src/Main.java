@@ -29,28 +29,23 @@ public class Main extends JFrame {
             addMouseMotionListener(new MouseAdapter() {
                 public void mouseMoved(MouseEvent e) {
                     gridPanel.updateHighlight(e.getX(), e.getY());
-                    updateLast100Positions(e.getPoint());
+                    last100Positions.add(e.getPoint());
+                    if (last100Positions.size() > 100) {
+                        last100Positions.removeFirst();
+                    }
                     repaint();
                 }
             });
         }
 
-        private void updateLast100Positions(Point p) {
-            if (last100Positions.size() >= 100) {
-                last100Positions.removeFirst();
-            }
-            last100Positions.addLast(p);
-        }
-
-        protected void paintComponent(Graphics g) {
+        public void paintComponent(Graphics g) {
             super.paintComponent(g);
-            drawLast100Positions(g);
+            drawLast100Positions(g); 
             gridPanel.drawGrid(g);
         }
 
-        private void drawLast100Positions(Graphics g) {
+        public void drawLast100Positions(Graphics g) {
             g.setColor(new Color(128, 128, 128, 128));
-
             for (Point p : last100Positions) {
                 g.fillOval(p.x - 5, p.y - 5, 10, 10);
             }
